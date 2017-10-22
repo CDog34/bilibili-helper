@@ -55,10 +55,12 @@
             return $.get(Live.protocol + '//live.bilibili.com/' + url).promise();
         };
         Live.getRoomIdByUrl = function (url, callback) {
+            // 页面载入时理论上会首先设置 RoomID ，所以说这里一定是会从 LocalStorage 中获取到东西的
             let id = store.get('bilibili_helper_live_roomId')[url];
             if (id != undefined) {
                 callback(id);
             } else {
+                // 不出意外的话走不到以下代码
                 // Should be real ROOMID
                 let roomID = Live.getShortRID();
                 if (roomID) {
@@ -3295,12 +3297,12 @@
                                 if (!version || version != Live.version) {
                                     store.set('bilibili_helper_version', Live.version);
                                 }
-                                $('#gift-panel').find('.control-panel').prepend('<div class="ctrl-item version"><span title="version: ' + Live.version + '">哔哩哔哩助手</span> by <a href="http://weibo.com/guguke" target="_blank">@啾咕咕www</a> <a href="http://weibo.com/ruo0037" target="_blank">@沒睡醒的肉啊</a></div>');
+                                $('.seeds-wrap').prepend('<div class="ctrl-item version" style="display:inline-block;margin-right:32px"><span title="version: ' + Live.version + '">哔哩哔哩助手</span> by <a class="bili-link" href="http://weibo.com/guguke" target="_blank">@啾咕咕www</a> <a class="bili-link" href="http://weibo.com/ruo0037" target="_blank">@沒睡醒的肉啊</a> <a class="bili-link" href="http://link.bilibili.com/p/world/index#/174820148/world" target="_blank">不愿透露姓名的虎纹橘猫</a></div>');
                                 Live.init.style();
                                 Live.init.medal();
 
                                 const roomURL = window.location.href
-
+                                // 此处脚本设置 LocalStorage 房间页相关信息
                                 Live.addScriptByText(`(function(){if ( !isNaN(location.pathname.split("/")[location.pathname.split("/").length - 1])) { var a=function(f,d,c){if(!window.localStorage||!f){return}var e=window.localStorage;if(!e[f]){e[f]=JSON.stringify({})}var b=JSON.parse(e[f]);if(c==undefined){e[f]=typeof d=="string"?d.trim():JSON.stringify(d)}else{b[d]=typeof c=="string"?c.trim():JSON.stringify(c);e[f]=JSON.stringify(b)}};a("bilibili_helper_live_roomId",window.ROOMURL || window.location.pathname.split("/")[window.location.pathname.split("/").length - 1] ,window.ROOMID || window.BilibiliLive.ROOMID );a("bilibili_helper_live_danmu_rnd",window.ROOMURL || window.location.pathname.split("/")[window.location.pathname.split("/").length - 1]  ,window.DANMU_RND || window.BilibiliLive.RND);}})();`);
                                 Live.roomId = Live.getRoomId();
                                 Live.getRoomInfo().done(function (data) {
