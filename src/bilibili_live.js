@@ -26,7 +26,13 @@
                 store.remove(key);
             }
         };
-        let Live = { scriptOptions: {}, hasInit: false, giftList: {}, mobileVerified: 0, protocol: location.protocol };
+        let Live = {
+            scriptOptions: {},
+            hasInit: false,
+            giftList: {},
+            mobileVerified: 0,
+            protocol: location.protocol
+        };
         Live.addScriptByFile = function (fileName, options) {
             let a = document.createElement('script');
             a.id = 'bilibiliHelperScript';
@@ -53,22 +59,17 @@
             if (id != undefined) {
                 callback(id);
             } else {
-                Live.getRoomHTML(url).done(function (roomHtml) {
-                    let reg = new RegExp('var ROOMID = ([\\d]+)');
-                    let roomID = reg.exec(roomHtml)[1];
-                    if (roomID) {
-                        let o;
-                        (o = store.get('bilibili_helper_live_roomId'))[url] = roomID;
-                        store.set('bilibili_helper_live_roomId', o);
-                        if (typeof callback === 'function') {
-                            callback(roomID);
-                        }
+                // Should be real ROOMID
+                let roomID = Live.getShortRID();
+                if (roomID) {
+                    let o;
+                    (o = store.get('bilibili_helper_live_roomId'))[url] = roomID;
+                    store.set('bilibili_helper_live_roomId', o);
+                    if (typeof callback === 'function') {
+                        callback(roomID);
                     }
-                }).fail(function (res) {
-                    if (res.status != 404) {
-                        Live.getRoomIdByUrl(url, callback);
-                    }
-                });
+                }
+
             }
         };
         Live.getUser = function () {
@@ -77,7 +78,7 @@
         Live.getMedalList = function () {
             return $.getJSON(Live.protocol + '//live.bilibili.com/i/ajaxGetMyMedalList').promise();
         };
-        Live.eval = function(fn) {
+        Live.eval = function (fn) {
             let Fn = Function;
             return new Fn('return ' + fn)();
         };
@@ -147,7 +148,8 @@
             }
         };
         Live.getRoomId = function () {
-            return store.get('bilibili_helper_live_roomId')[location.pathname.substr(1)];
+            const shortRID = Live.getShortRID()
+            return store.get('bilibili_helper_live_roomId')[shortRID];
         };
         Live.getRoomInfo = function () {
             return $.getJSON(Live.protocol + '//live.bilibili.com/live/getInfo?roomid=' + Live.roomId).promise();
@@ -406,12 +408,19 @@
                 return null !== t.offsetParent ? e += i(t.offsetParent) : void 0, e;
             }
 
-            let f = { width: $(d).width(), height: $(d).height() },
+            let f = {
+                    width: $(d).width(),
+                    height: $(d).height()
+                },
                 p = o(d),
                 m = i(d);
-            $(u).css({ left: p + f.width });
+            $(u).css({
+                left: p + f.width
+            });
             let v = 0;
-            v = document.body.scrollTop, $(u).css({ top: m + f.height }), setTimeout(function () {
+            v = document.body.scrollTop, $(u).css({
+                top: m + f.height
+            }), setTimeout(function () {
                 $(u).addClass('out'), setTimeout(function () {
                     $(u).remove(), c = u = d = f = p = m = v = null;
                 }, 400);
@@ -419,7 +428,9 @@
             let h = $(window).width(),
                 g = u.offsetWidth,
                 y = u.offsetLeft;
-            0 > h - g - y && $(u).css({ left: h - g - 10 }), h = g = y = null;
+            0 > h - g - y && $(u).css({
+                left: h - g - 10
+            }), h = g = y = null;
         };
         Live.doSign = {
             getSignInfo: function () {
@@ -433,7 +444,10 @@
                     if (response['value'] === 'on') {
                         let username = store.get('bilibili_helper_userInfo')['username'];
                         let o;
-                        (o = {})[username] = { today: false, date: undefined };
+                        (o = {})[username] = {
+                            today: false,
+                            date: undefined
+                        };
                         store.set('bilibili_helper_doSign', o);
                         Live.doSign.getSignInfo().done(function (data) {
                             if (data.code === 0 && data.data.status === 0) {
@@ -443,7 +457,10 @@
                             } else if (data.code === 0 && data.data.status === 1) {
                                 let username = store.get('bilibili_helper_userInfo')['username'];
                                 let o;
-                                (o = store.get('bilibili_helper_doSign'))[username] = { today: true, date: new Date().getDate() };
+                                (o = store.get('bilibili_helper_doSign'))[username] = {
+                                    today: true,
+                                    date: new Date().getDate()
+                                };
                                 store.set('bilibili_helper_doSign', o);
                             }
                         });
@@ -477,7 +494,10 @@
                                 icon: Live.protocol + '//static.hdslb.com/live-static/images/7.png',
                             });
                             var o;
-                            (o = store.get('bilibili_helper_doSign'))[username] = { today: true, date: date };
+                            (o = store.get('bilibili_helper_doSign'))[username] = {
+                                today: true,
+                                date: date
+                            };
                             store.set('bilibili_helper_doSign', o);
                             setTimeout(function () {
                                 msg.close();
@@ -490,7 +510,10 @@
                                 icon: Live.protocol + '//static.hdslb.com/live-static/live-room/images/gift-section/gift-1.gif',
                             });
                             var o;
-                            (o = store.get('bilibili_helper_doSign'))[username] = { today: true, date: date };
+                            (o = store.get('bilibili_helper_doSign'))[username] = {
+                                today: true,
+                                date: date
+                            };
                             store.set('bilibili_helper_doSign', o);
                             setTimeout(function () {
                                 msg.close();
@@ -661,7 +684,7 @@
                         complete: function (data) {
                             let b = JSON.parse(data.responseText);
                             if (b.code === -400) { // error
-                                if (b.msg === '手慢了,剩余可购数量不足！') { } else {
+                                if (b.msg === '手慢了,剩余可购数量不足！') {} else {
                                     o.error(b);
                                 }
                             } else if (b.msg === 'ok') { // success
@@ -1077,7 +1100,20 @@
             timer: 0,
             stop: false,
             silverSum: 0,
-            correctStr: { 'g': 9, 'z': 2, '_': 4, 'Z': 2, 'o': 0, 'l': 1, 'B': 8, 'O': 0, 'S': 6, 's': 6, 'i': 1, 'I': 1 },
+            correctStr: {
+                'g': 9,
+                'z': 2,
+                '_': 4,
+                'Z': 2,
+                'o': 0,
+                'l': 1,
+                'B': 8,
+                'O': 0,
+                'S': 6,
+                's': 6,
+                'i': 1,
+                'I': 1
+            },
             silverSeed: false, // current silver
             allowCtrl: true,
             status: 'waiting', // current treasure status: "waiting" || "acquirable"
@@ -1235,7 +1271,9 @@
                                         }
                                     }, 1000);
 
-                                    let port = chrome.runtime.connect({ name: chrome.i18n.getMessage('@@extension_id') });
+                                    let port = chrome.runtime.connect({
+                                        name: chrome.i18n.getMessage('@@extension_id')
+                                    });
                                     port.onMessage.addListener(function (request) {
                                         switch (request.command) {
                                             case 'updateCurrentTreasure':
@@ -1436,7 +1474,7 @@
                 // Live.treasure.awardBtn.awarding();
 
                 let img = Live.treasure.treasureTipAcquire.find('.captcha-img');
-                img.on("load",function () {
+                img.on("load", function () {
                     Live.treasure.context.clearRect(0, 0, Live.treasure.canvas.width, Live.treasure.canvas.height);
                     Live.treasure.context.drawImage(img[0], 0, 0);
                     Live.treasure.captcha.question = Live.treasure.correctQuestion(OCRAD(Live.treasure.context.getImageData(0, 0, 120, 40)));
@@ -1449,14 +1487,18 @@
                     !Live.treasure.stop && getAward(data.startTime, data.endTime, captcha);
                 });
                 Live.treasure.captcha.refresh();
-                img.on("error",function () {
+                img.on("error", function () {
                     Live.treasure.captcha.refresh();
                 });
 
                 function getAward(time_start, time_end, captcha) {
                     Live.treasure.imgInit = false;
                     Live.treasure.stop && Live.helperInfo.setTreasureStatus('success', '功能已经启动');
-                    $.get(Live.protocol + '//live.bilibili.com/FreeSilver/getAward', { time_start: time_start, time_end: time_end, captcha: captcha }, function () { }, 'json').promise()
+                    $.get(Live.protocol + '//live.bilibili.com/FreeSilver/getAward', {
+                            time_start: time_start,
+                            time_end: time_end,
+                            captcha: captcha
+                        }, function () {}, 'json').promise()
                         .done(function (result) {
                             if (result.code != 0) {
                                 Live.liveToast(Live.treasure.captchaInput[0], 'info', result.msg + Live.randomEmoji.helpless());
@@ -1536,10 +1578,10 @@
                 return q;
             },
             getCurrentTask: function () {
-                return $.get(Live.protocol + '//live.bilibili.com/FreeSilver/getCurrentTask', {}, function () { }, 'json').promise();
+                return $.get(Live.protocol + '//live.bilibili.com/FreeSilver/getCurrentTask', {}, function () {}, 'json').promise();
             },
             getSurplus: function () {
-                return $.get(Live.protocol + '//live.bilibili.com/FreeSilver/getSurplus', {}, function () { }, 'json').promise();
+                return $.get(Live.protocol + '//live.bilibili.com/FreeSilver/getSurplus', {}, function () {}, 'json').promise();
             },
             getCaptcha: function () {
                 return Live.protocol + '//live.bilibili.com/freeSilver/getCaptcha?ts=' + Date.now();
@@ -1549,8 +1591,20 @@
             maxLength: 20,
             text: '',
             beat: false,
-            colorValue: { 'white': '0xffffff', 'red': '0xff6868', 'blue': '0x66ccff', 'pink': '0xfca992', 'cyan': '0x00fffc', 'green': '0x7eff00', 'yellow': '0xffed4f', 'orange': '0xff9800' },
-            danmuMode: { 'top': 5, 'scroll': 1 },
+            colorValue: {
+                'white': '0xffffff',
+                'red': '0xff6868',
+                'blue': '0x66ccff',
+                'pink': '0xfca992',
+                'cyan': '0x00fffc',
+                'green': '0x7eff00',
+                'yellow': '0xffed4f',
+                'orange': '0xff9800'
+            },
+            danmuMode: {
+                'top': 5,
+                'scroll': 1
+            },
             hideStyle: {
                 chat: {
                     title: '聊天内容',
@@ -1912,13 +1966,17 @@
                 Live.chat.counter.text(text.length + ' / ' + (part === 0 ? 1 : part) + ' + ' + rest);
             },
         };
+        Live.getShortRID = function () {
+            const pathNameArr = location.pathname.split('/')
+            return pathNameArr[pathNameArr.length - 1]
+        };
         Live.notise = {
             init: function () {
                 let upInfo = {};
                 Live.getRoomInfo().done(function (data) {
                     upInfo.uid = data.data.UID;
                     upInfo.roomId = data.data.ROOMID;
-                    upInfo.roomShortI = location.pathname.substr(1);
+                    upInfo.roomShortI = Live.getShortRID();
                     upInfo.roomTitle = data.data.ROOMTITLE;
                     upInfo.upName = data.data.ANCHOR_NICK_NAME;
                     upInfo.url = location.href;
@@ -1964,13 +2022,27 @@
             count: 0,
             reward: {},
             rewardList: {
-                "1": { title: "大号小电视" },
-                "2": { title: "蓝白胖次道具" },
-                "3": { title: "B坷垃" },
-                "4": { title: "喵娘" },
-                "5": { title: "便当" },
-                "6": { title: "银瓜子" },
-                "7": { title: "辣条" }
+                "1": {
+                    title: "大号小电视"
+                },
+                "2": {
+                    title: "蓝白胖次道具"
+                },
+                "3": {
+                    title: "B坷垃"
+                },
+                "4": {
+                    title: "喵娘"
+                },
+                "5": {
+                    title: "便当"
+                },
+                "6": {
+                    title: "银瓜子"
+                },
+                "7": {
+                    title: "辣条"
+                }
             },
             init: function () {
                 Live.smallTV.reward = store.get('bilibili_helper_tvs_reward');
@@ -1985,7 +2057,10 @@
                 }
             },
             get: function (roomId) {
-                $.getJSON('/SmallTV/index', { roomid: roomId, _: (new Date()).getTime() }).promise().done(function (result) {
+                $.getJSON('/SmallTV/index', {
+                    roomid: roomId,
+                    _: (new Date()).getTime()
+                }).promise().done(function (result) {
                     if (result.code == 0) { // 正在抽奖中
                         if (result.data.unjoin.length || result.data.join.length) {
                             // sTvVM.isShowPanel = true;
@@ -1998,7 +2073,10 @@
                         } else {
                             Live.console.watcher('小电视活动 直播间【' + roomId + '】 成功获取抽奖信息');
                             var unjoin = result.data.unjoin;
-                            if (Live.smallTV.tvList[roomId] == undefined) Live.smallTV.tvList[roomId] = { "tv": [], "iter": 0 };
+                            if (Live.smallTV.tvList[roomId] == undefined) Live.smallTV.tvList[roomId] = {
+                                "tv": [],
+                                "iter": 0
+                            };
                             for (var i = 0; i < unjoin.length; ++i) {
                                 var tv = unjoin[i];
                                 tv.finished = false;
@@ -2017,8 +2095,11 @@
                     Live.smallTV.get(roomId);
                 });
             },
-            notify:(roomId)=>{
-                 $.getJSON('/SmallTV/index', { roomid: roomId, _: (new Date()).getTime() }).promise().done(function (result) {
+            notify: (roomId) => {
+                $.getJSON('/SmallTV/index', {
+                    roomid: roomId,
+                    _: (new Date()).getTime()
+                }).promise().done(function (result) {
                     if (result.code == 0) { // 正在抽奖中
                         if (result.data.unjoin.length || result.data.join.length) {
                             // sTvVM.isShowPanel = true;
@@ -2031,21 +2112,24 @@
                         } else {
                             Live.console.watcher('小电视活动 直播间【' + roomId + '】 成功获取抽奖信息');
                             var unjoin = result.data.unjoin;
-                            if (Live.smallTV.tvList[roomId] == undefined) Live.smallTV.tvList[roomId] = { "tv": [], "iter": 0 };
-                            if(unjoin.length > 0){
+                            if (Live.smallTV.tvList[roomId] == undefined) Live.smallTV.tvList[roomId] = {
+                                "tv": [],
+                                "iter": 0
+                            };
+                            if (unjoin.length > 0) {
                                 chrome.runtime.sendMessage({
                                     command: 'tvNotification',
-                                    data:{
+                                    data: {
                                         roomId: roomId
                                     },
-                                }, (response)=>{});
+                                }, (response) => {});
                             }
                         }
                     }
                 }).fail(function (result) {
                     Live.smallTV.notify(roomId);
                 });
-                
+
             },
             /*join: function (roomId, tvId) {
                 $.getJSON('/SmallTV/join', { roomid: roomId, _: (new Date()).getTime(), id: tvId }).promise().then(function (result) {
@@ -2162,7 +2246,7 @@
                                                 data: {
                                                     uid: data.data.UID,
                                                     roomId: data.data.ROOMID,
-                                                    roomShortId: location.pathname.substr(1),
+                                                    roomShortId: Live.getShortRID(),
                                                     roomTitle: data.data.ROOMTITLE,
                                                     upName: data.data.ANCHOR_NICK_NAME,
                                                     url: location.href,
@@ -2325,14 +2409,15 @@
                         // Live.smallTV.get(roomId);
                         Live.smallTV.notify(roomId);
                     });
-                } /*else if (msg[0] === '恭' && json.url === '' && json.rep === 1 && json.styleType === 2) { // get smallTV reward
-                    var reg = new RegExp('恭喜【([\\S]+)】在直播间【([\\d]+)】');
-                    var res = reg.exec(msg);
-                    let url = res[2];
-                    let roomId = store.get('bilibili_helper_live_roomId')[url];
-                    let tv = Live.smallTV.getTVdata(roomId);
-                    tv && Live.smallTV.getReward(tv.id, roomId);
-                }*/
+                }
+                /*else if (msg[0] === '恭' && json.url === '' && json.rep === 1 && json.styleType === 2) { // get smallTV reward
+                                   var reg = new RegExp('恭喜【([\\S]+)】在直播间【([\\d]+)】');
+                                   var res = reg.exec(msg);
+                                   let url = res[2];
+                                   let roomId = store.get('bilibili_helper_live_roomId')[url];
+                                   let tv = Live.smallTV.getTVdata(roomId);
+                                   tv && Live.smallTV.getReward(tv.id, roomId);
+                               }*/
             },
             dealWithSysGift: function (json) {
                 // "tips": "【正義の此方】在直播间【81688】内 赠送 刨冰共 100 个，触发 1 次刨冰雨抽奖，快去前往抽奖吧！"
@@ -2408,11 +2493,11 @@
                             counter = store.get('bilibili_helper_tvs_count');
                             giftsList = Live.smallTV.rewardList;
                             break;
-                        // case 'lottery':
-                        //     gifts = store.get('bilibili_helper_lottery_reward');
-                        //     counter = store.get('bilibili_helper_lottery_count');
-                        //     giftsList = store.get('bilibili_helper_lottery_reward_list');
-                        //     break;
+                            // case 'lottery':
+                            //     gifts = store.get('bilibili_helper_lottery_reward');
+                            //     counter = store.get('bilibili_helper_lottery_count');
+                            //     giftsList = store.get('bilibili_helper_lottery_reward_list');
+                            //     break;
                     }
                     if (giftsList && Live.watcher.panelDOM[type]) {
                         Live.watcher.panelDOM[type].find('.reward-container').empty();
@@ -2606,7 +2691,9 @@
                         return;
                     }
                     let gifts = Live.giftpackage.giftSendLinePanel.giftsData;
-                    let status = { complete: 0 };
+                    let status = {
+                        complete: 0
+                    };
                     Live.giftpackage.giftSendLinePanel.send(gifts, status, Live.giftpackage.giftSendLinePanel.callback);
                 },
                 send: function (gifts, status, callback) {
@@ -3085,13 +3172,13 @@
                 return r;
             },
             getGiftPackage: function () { // get package data
-                return $.get(Live.protocol + '//live.bilibili.com/gift/playerBag', {}, function () { }, 'json').promise();
+                return $.get(Live.protocol + '//live.bilibili.com/gift/playerBag', {}, function () {}, 'json').promise();
             },
             getSendGift: function () { // get new gift
-                return $.get(Live.protocol + '//live.bilibili.com/giftBag/getSendGift', {}, function () { }, 'json').promise();
+                return $.get(Live.protocol + '//live.bilibili.com/giftBag/getSendGift', {}, function () {}, 'json').promise();
             },
             getGiftPackageStatus: function () { // get the info for 'if has new gift'
-                return $.get(Live.protocol + '//live.bilibili.com/giftBag/sendDaily', {}, function () { }, 'json').promise();
+                return $.get(Live.protocol + '//live.bilibili.com/giftBag/sendDaily', {}, function () {}, 'json').promise();
             },
             openGiftPackagePanel: function () {
                 if (Live.giftpackage.packagePanel.css('display') != 'none') {
@@ -3154,8 +3241,8 @@
                 let roomInfoURL = san.attr('href');
                 let sanValue = san.find('.san-num');
                 let sanIn = $('<div class="row-item san-info"><span class="san">San ：</span></div>').append(sanValue);
-                
-                helperAnchorInfoPanel.append(sanIn, area, tags,  manage, report, share);
+
+                helperAnchorInfoPanel.append(sanIn, area, tags, manage, report, share);
 
 
                 /* helper info panel*/
@@ -3195,9 +3282,10 @@
                     if (store.get('bilibili_helper_login', 'login')) {
                         // Live.bilibiliHelperInfoDOM = $('<div class="room-info bilibili-helper-info"></div>');
                         // $('.left-part.player-area').prepend(Live.bilibiliHelperInfoDOM);
-                        if (location.pathname.substr(1) && !isNaN(location.pathname.substr(1))) {
+                        const roomId = Live.getShortRID()
+                        if (!isNaN(roomId)) {
                             /* get options*/
-                            
+
                             chrome.runtime.sendMessage({
                                 command: 'getOption',
                                 key: 'version',
@@ -3211,12 +3299,14 @@
                                 Live.init.style();
                                 Live.init.medal();
 
-                                Live.addScriptByText('(function(){if (location.pathname.substr(1) && !isNaN(location.pathname.substr(1))) {var a=function(f,d,c){if(!window.localStorage||!f){return}var e=window.localStorage;if(!e[f]){e[f]=JSON.stringify({})}var b=JSON.parse(e[f]);if(c==undefined){e[f]=typeof d=="string"?d.trim():JSON.stringify(d)}else{b[d]=typeof c=="string"?c.trim():JSON.stringify(c);e[f]=JSON.stringify(b)}};a("bilibili_helper_live_roomId",ROOMURL,ROOMID);a("bilibili_helper_live_danmu_rnd",ROOMURL,DANMU_RND);}})();');
+                                const roomURL = window.location.href
+
+                                Live.addScriptByText(`(function(){if ( !isNaN(location.pathname.split("/")[location.pathname.split("/").length - 1])) { var a=function(f,d,c){if(!window.localStorage||!f){return}var e=window.localStorage;if(!e[f]){e[f]=JSON.stringify({})}var b=JSON.parse(e[f]);if(c==undefined){e[f]=typeof d=="string"?d.trim():JSON.stringify(d)}else{b[d]=typeof c=="string"?c.trim():JSON.stringify(c);e[f]=JSON.stringify(b)}};a("bilibili_helper_live_roomId",window.ROOMURL || window.location.pathname.split("/")[window.location.pathname.split("/").length - 1] ,window.ROOMID || window.BilibiliLive.ROOMID );a("bilibili_helper_live_danmu_rnd",window.ROOMURL || window.location.pathname.split("/")[window.location.pathname.split("/").length - 1]  ,window.DANMU_RND || window.BilibiliLive.RND);}})();`);
                                 Live.roomId = Live.getRoomId();
                                 Live.getRoomInfo().done(function (data) {
                                     Live.init.giftList();
                                     Live.roomInfo = data.data;
-                                    Live.roomInfo.roomShortId = location.pathname.substr(1);
+                                    Live.roomInfo.roomShortId = Live.getShortRID();
                                     Live.helperInfo.initPanel();
 
                                     // function init
@@ -3249,7 +3339,7 @@
                 if (l.length) {
                     l.remove();
                 }
-                Live.init.inject_css('bilibiliHelperLive','live.min.css');
+                Live.init.inject_css('bilibiliHelperLive', 'live.min.css');
             },
             inject_css: function (name, filename) {
                 let styleLink = document.createElement('link');
@@ -3263,10 +3353,10 @@
                     document.documentElement.appendChild(styleLink);
                 }
             },
-            ad:function(){
+            ad: function () {
                 chrome.runtime.sendMessage({
                     command: 'getAd',
-                }, function(response) {
+                }, function (response) {
                     if (response.value === 'on') {
                         Live.init.inject_css('bilibiliHelperAdStyle', 'bilibiliHelperAd.min.css');
                     }
@@ -3406,6 +3496,6 @@
                 });
             },
         };
-        Live.init.do();
+        Live.init.do()
     }
 })();
